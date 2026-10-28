@@ -123,6 +123,20 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Обои могли смениться в файловом менеджере.
+        if (prefs.getBoolean("wallpaper_dirty", false)) {
+            prefs.edit().putBoolean("wallpaper_dirty", false).apply();
+            loadWallpaper(true);
+        }
+    }
+
+    private void openFiles() {
+        startActivity(new Intent(this, FilesActivity.class));
+    }
+
+    @Override
     protected void onDestroy() {
         try {
             unregisterReceiver(packageReceiver);
@@ -223,9 +237,10 @@ public class MainActivity extends Activity {
         clockBox.addView(date);
         top.addView(clockBox, new LinearLayout.LayoutParams(0, -2, 1f));
 
+        top.addView(makeButton("Файлы", v -> openFiles()));
+        top.addView(new View(this), new LinearLayout.LayoutParams(dp(12), 1));
         top.addView(makeButton("Меню", v -> showLauncherMenu()));
-        View gap = new View(this);
-        top.addView(gap, new LinearLayout.LayoutParams(dp(12), 1));
+        top.addView(new View(this), new LinearLayout.LayoutParams(dp(12), 1));
         top.addView(makeButton("Настройки", v -> openSystemSettings()));
 
         // --- сетка приложений
@@ -521,6 +536,7 @@ public class MainActivity extends Activity {
 
     private void showLauncherMenu() {
         String[] items = {
+                "Файлы",
                 "Выбрать обои",
                 "Обои: автоматически (новейшая картинка)",
                 "Без обоев",
@@ -531,21 +547,22 @@ public class MainActivity extends Activity {
         dialog().setTitle("Lite Launcher")
                 .setItems(items, (d, which) -> {
                     switch (which) {
-                        case 0: chooseWallpaper(); break;
-                        case 1:
+                        case 0: openFiles(); break;
+                        case 1: chooseWallpaper(); break;
+                        case 2:
                             prefs.edit().putString(KEY_WALLPAPER, "").apply();
                             loadWallpaper(true);
                             break;
-                        case 2:
+                        case 3:
                             prefs.edit().putString(KEY_WALLPAPER, "-").apply();
                             wallpaperView.setImageDrawable(null);
                             break;
-                        case 3: showHidden(); break;
-                        case 4:
+                        case 4: showHidden(); break;
+                        case 5:
                             prefs.edit().remove(KEY_ORDER).apply();
                             loadApps();
                             break;
-                        case 5: showAbout(); break;
+                        case 6: showAbout(); break;
                         default: break;
                     }
                 })

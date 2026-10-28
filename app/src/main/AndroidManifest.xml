@@ -8,6 +8,12 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <!-- Файловый менеджер: доступ ко всем файлам и флешкам -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <!-- Установка APK из файлового менеджера (система всё равно спрашивает подтверждение) -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Пункт «Удалить приложение» в меню плитки -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
@@ -25,6 +31,7 @@
         android:banner="@drawable/banner"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen"
         android:allowBackup="false"
+        android:requestLegacyExternalStorage="true"
         android:largeHeap="false">
 
         <activity
@@ -43,5 +50,17 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".FilesActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|uiMode" />
+
+        <provider
+            android:name=".FilesProvider"
+            android:authorities="ru.dimanonorm.tvlauncher.files"
+            android:exported="false"
+            android:grantUriPermissions="true" />
     </application>
 </manifest>
