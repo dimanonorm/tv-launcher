@@ -31,8 +31,8 @@ jobs:
       - name: Build release APK
         run: |
           set -o pipefail
-          gradle :app:assembleRelease --no-daemon 2>&1 | tee build.log || {
-            grep -E "error|Error|FAILURE|What went wrong|wrong:|> " build.log | tail -25 | while IFS= read -r line; do echo "::error::$line"; done
+          gradle :app:assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log || {
+            grep -v "^\s*$" build.log | tail -45 | while IFS= read -r line; do echo "::error::$line"; done
             exit 1
           }
 
