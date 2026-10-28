@@ -72,6 +72,7 @@ public class MainActivity extends Activity {
     private static final String KEY_HIDDEN = "hidden";
     private static final String KEY_WALLPAPER = "wallpaper";   // имя файла, "" = авто, "-" = без обоев
     private static final int ACCENT = 0xFFD97757;
+    private static final String SCREENSAVER = "@screensaver";
 
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -370,6 +371,15 @@ public class MainActivity extends Activity {
                 e.banner = banner != null ? banner : ri.loadIcon(pm);
                 byPkg.put(e.pkg, e);
             }
+            if (!hidden.contains(SCREENSAVER)) {
+                AppEntry ss = new AppEntry();
+                ss.pkg = SCREENSAVER;
+                ss.component = new ComponentName("com.android.systemui", "com.android.systemui.Somnambulator");
+                ss.label = "Заставка";
+                ss.banner = Icons.screensaverBanner();
+                ss.isBanner = true;
+                byPkg.put(ss.pkg, ss);
+            }
             List<AppEntry> sorted = new ArrayList<>();
             for (String p : order) {
                 AppEntry e = byPkg.remove(p);
@@ -410,6 +420,10 @@ public class MainActivity extends Activity {
     private void launch(int pos) {
         if (pos < 0 || pos >= apps.size()) return;
         AppEntry e = apps.get(pos);
+        if (SCREENSAVER.equals(e.pkg)) {
+            startScreensaver();
+            return;
+        }
         Intent i = new Intent(Intent.ACTION_MAIN)
                 .addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER)
                 .setComponent(e.component)
@@ -423,6 +437,21 @@ public class MainActivity extends Activity {
                 startActivity(alt.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } else {
                 toast("Не удалось открыть " + e.label);
+            }
+        }
+    }
+
+    private void startScreensaver() {
+        try {
+            startActivity(new Intent(Intent.ACTION_MAIN)
+                    .setClassName("com.android.systemui", "com.android.systemui.Somnambulator")
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (ActivityNotFoundException | SecurityException ex) {
+            try {
+                startActivity(new Intent(Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                toast("Не удалось запустить заставку — открыл её настройки");
+            } catch (ActivityNotFoundException ex2) {
+                toast("Заставка недоступна на этом телевизоре");
             }
         }
     }
@@ -490,6 +519,10 @@ public class MainActivity extends Activity {
         final String[] names = new String[pkgs.size()];
         PackageManager pm = getPackageManager();
         for (int i = 0; i < pkgs.size(); i++) {
+            if (SCREENSAVER.equals(pkgs.get(i))) {
+                names[i] = "Заставка";
+                continue;
+            }
             try {
                 names[i] = pm.getApplicationLabel(pm.getApplicationInfo(pkgs.get(i), 0)).toString();
             } catch (PackageManager.NameNotFoundException ex) {
@@ -734,10 +767,14 @@ public class MainActivity extends Activity {
                 GradientDrawable bg = new GradientDrawable();
                 bg.setCornerRadius(dp(10));
                 bg.setColor(0xFF1E1E1E);
-                bg.setStroke(dp(3), Color.TRANSPARENT);
                 card.setBackground(bg);
                 card.setClipToOutline(true);
-                card.setPadding(dp(3), dp(3), dp(3), dp(3));
+                // Рамка фокуса рисуется поверх картинки, а не вокруг неё — без полей по бокам.
+                GradientDrawable frame = new GradientDrawable();
+                frame.setCornerRadius(dp(10));
+                frame.setColor(Color.TRANSPARENT);
+                frame.setStroke(dp(3), Color.TRANSPARENT);
+                card.setForeground(frame);
                 ImageView img = new ImageView(MainActivity.this);
                 card.addView(img, new FrameLayout.LayoutParams(-1, -1));
                 box.addView(card, new LinearLayout.LayoutParams(tileWidth, cardH));
@@ -754,7 +791,7 @@ public class MainActivity extends Activity {
                 h = new TileHolder();
                 h.image = img;
                 h.label = label;
-                h.cardBg = bg;
+                h.cardBg = frame;
                 box.setTag(h);
                 tile = box;
             } else {
@@ -764,12 +801,17 @@ public class MainActivity extends Activity {
             AppEntry e = apps.get(position);
             h.image.setImageDrawable(e.banner);
             if (e.isBanner) {
-                h.image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                // Баннер заполняет всю ячейку и чуть приближен, чтобы срезать поля, встроенные в сам баннер.
+                h.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 h.image.setPadding(0, 0, 0, 0);
+                h.image.setScaleX(1.06f);
+                h.image.setScaleY(1.06f);
             } else {
                 h.image.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                int p = tileWidth / 8;
+                int p = tileWidth / 10;
                 h.image.setPadding(p, p, p, p);
+                h.image.setScaleX(1f);
+                h.image.setScaleY(1f);
             }
             h.label.setText(e.label);
 

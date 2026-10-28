@@ -294,7 +294,7 @@ public class FilesActivity extends Activity {
         addPlace("Обои", new File(internal, "Wallpapers"), internal);
 
         for (Volume v : removableVolumes()) {
-            addPlace("💾 " + v.label, v.dir, v.dir);
+            addPlace("USB: " + v.label, v.dir, v.dir);
         }
     }
 
@@ -837,24 +837,10 @@ public class FilesActivity extends Activity {
         return String.format(Locale.getDefault(), v < 10 ? "%.1f %s" : "%.0f %s", v, u[i]);
     }
 
-    private static String iconFor(File f) {
-        if (f.isDirectory()) return "📁";
-        String e = extension(f);
-        if (isImage(e)) return "🖼";
-        switch (e) {
-            case "mp4": case "mkv": case "avi": case "mov": case "webm": case "ts": case "m4v": return "🎬";
-            case "mp3": case "flac": case "wav": case "ogg": case "m4a": case "aac": return "🎵";
-            case "apk": return "📦";
-            case "zip": case "rar": case "7z": case "tar": case "gz": return "🗜";
-            case "pdf": case "txt": case "doc": case "docx": case "xls": case "xlsx": return "📄";
-            default: return "📃";
-        }
-    }
-
     // ---------------------------------------------------------------- adapter
 
     static final class RowHolder {
-        TextView icon;
+        ImageView icon;
         TextView name;
         TextView info;
     }
@@ -885,9 +871,10 @@ public class FilesActivity extends Activity {
                 r.setGravity(Gravity.CENTER_VERTICAL);
                 r.setPadding(dp(14), dp(12), dp(14), dp(12));
                 h = new RowHolder();
-                h.icon = new TextView(FilesActivity.this);
-                h.icon.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-                r.addView(h.icon, new LinearLayout.LayoutParams(dp(44), -2));
+                h.icon = new ImageView(FilesActivity.this);
+                LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(dp(32), dp(32));
+                ilp.rightMargin = dp(14);
+                r.addView(h.icon, ilp);
                 h.name = new TextView(FilesActivity.this);
                 h.name.setTextColor(Color.WHITE);
                 h.name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
@@ -905,7 +892,7 @@ public class FilesActivity extends Activity {
                 h = (RowHolder) row.getTag();
             }
             File f = entries.get(position);
-            h.icon.setText(iconFor(f));
+            h.icon.setImageDrawable(Icons.file(f));
             h.name.setText(f.getName());
             String date = dateFmt.format(new Date(f.lastModified()));
             if (f.isDirectory()) {
