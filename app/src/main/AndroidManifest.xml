@@ -57,6 +57,24 @@
             android:screenOrientation="landscape"
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|uiMode" />
 
+        <activity
+            android:name=".ScreensaverActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
+
+        <service
+            android:name=".SlideshowDream"
+            android:exported="true"
+            android:label="Lite Launcher — слайд-шоу"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
         <provider
             android:name=".FilesProvider"
             android:authorities="ru.dimanonorm.tvlauncher.files"

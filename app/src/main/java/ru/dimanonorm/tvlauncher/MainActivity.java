@@ -442,18 +442,9 @@ public class MainActivity extends Activity {
     }
 
     private void startScreensaver() {
-        try {
-            startActivity(new Intent(Intent.ACTION_MAIN)
-                    .setClassName("com.android.systemui", "com.android.systemui.Somnambulator")
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-        } catch (ActivityNotFoundException | SecurityException ex) {
-            try {
-                startActivity(new Intent(Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                toast("Не удалось запустить заставку — открыл её настройки");
-            } catch (ActivityNotFoundException ex2) {
-                toast("Заставка недоступна на этом телевизоре");
-            }
-        }
+        // Системную заставку обычное приложение на этой прошивке запустить не может,
+        // поэтому показываем свою — слайд-шоу картинок из папки Wallpapers.
+        startActivity(new Intent(this, ScreensaverActivity.class));
     }
 
     private void move(int from, int to) {
