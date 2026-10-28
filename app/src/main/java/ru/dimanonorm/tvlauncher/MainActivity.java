@@ -247,7 +247,8 @@ public class MainActivity extends Activity {
         // --- сетка приложений
         DisplayMetrics dm = getResources().getDisplayMetrics();
         int spacing = dp(20);
-        int gridWidth = dm.widthPixels - pad * 2;
+        int edge = dp(16);   // запас по краям, чтобы увеличенная плитка не обрезалась
+        int gridWidth = dm.widthPixels - pad * 2 - edge * 2;
         tileWidth = (gridWidth - spacing * (COLUMNS - 1)) / COLUMNS;
 
         grid = new GridView(this);
@@ -259,7 +260,7 @@ public class MainActivity extends Activity {
         grid.setSelector(new ColorDrawable(Color.TRANSPARENT));
         grid.setClipToPadding(false);
         grid.setClipChildren(false);
-        grid.setPadding(0, dp(28), 0, dp(28));
+        grid.setPadding(edge, dp(28), edge, dp(28));
         grid.setVerticalScrollBarEnabled(false);
         grid.setAdapter(adapter);
         grid.setOnItemClickListener((p, v, pos, id) -> launch(pos));
@@ -718,7 +719,7 @@ public class MainActivity extends Activity {
     // ---------------------------------------------------------------- adapter
 
     static final class TileHolder {
-        ImageView image;
+        CropImageView image;
         TextView label;
         GradientDrawable cardBg;
     }
@@ -766,7 +767,7 @@ public class MainActivity extends Activity {
                 frame.setColor(Color.TRANSPARENT);
                 frame.setStroke(dp(3), Color.TRANSPARENT);
                 card.setForeground(frame);
-                ImageView img = new ImageView(MainActivity.this);
+                CropImageView img = new CropImageView(MainActivity.this);
                 card.addView(img, new FrameLayout.LayoutParams(-1, -1));
                 box.addView(card, new LinearLayout.LayoutParams(tileWidth, cardH));
 
@@ -793,16 +794,13 @@ public class MainActivity extends Activity {
             h.image.setImageDrawable(e.banner);
             if (e.isBanner) {
                 // Баннер заполняет всю ячейку и чуть приближен, чтобы срезать поля, встроенные в сам баннер.
-                h.image.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 h.image.setPadding(0, 0, 0, 0);
-                h.image.setScaleX(1.06f);
-                h.image.setScaleY(1.06f);
+                h.image.setZoom(1.06f);
             } else {
-                h.image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                // Обычная иконка — по центру с отступом, целиком.
                 int p = tileWidth / 10;
                 h.image.setPadding(p, p, p, p);
-                h.image.setScaleX(1f);
-                h.image.setScaleY(1f);
+                h.image.setZoom(0.0f);
             }
             h.label.setText(e.label);
 
